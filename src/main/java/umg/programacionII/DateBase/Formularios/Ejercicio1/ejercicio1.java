@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -74,15 +75,14 @@ public class ejercicio1 extends JFrame {
         //crear un registro
         buttonCrear1.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                ModelDatos datos= new ModelDatos();
+            public void actionPerformed(ActionEvent e) {        ModelDatos datos = new ModelDatos();
                 datos.setNombre(textFieldNombre1.getText());
                 datos.setApellido(textFieldApellido1.getText());
                 datos.setDepartamento(comboBoxDepertamento1.getSelectedItem().toString());
                 datos.setFechaNacimiento(new Timestamp(System.currentTimeMillis()));
 
-                if(textFieldNombre1.getText().trim().isEmpty()&& textFieldApellido1.getText().trim().isEmpty()){
-                    JOptionPane.showMessageDialog(null, "El nombre y el apellido no deben estar vacios");
+                if (textFieldNombre1.getText().trim().isEmpty() && textFieldApellido1.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "El nombre y el apellido no deben estar vacíos");
                     return;
                 }
 
@@ -98,11 +98,19 @@ public class ejercicio1 extends JFrame {
 
                 try {
                     new ServiceDatos().insertar(datos);
-                    JOptionPane.showMessageDialog(null, "Efectivamente ah nacido con exito");
+                    JOptionPane.showMessageDialog(null, "Efectivamente ha nacido con éxito");
+
+                    // Limpiar los campos después de crear el registro
+                    textFieldNombre1.setText("");
+                    textFieldApellido1.setText("");
+                    comboBoxDepertamento1.setSelectedIndex(0);
+                    textFieldFechaNacimiento1.setText("");
+
                 } catch (Exception exception) {
-                    JOptionPane.showMessageDialog(null, "Aun falta un mes para que nazca" + exception);
+                    JOptionPane.showMessageDialog(null, "Aún falta un mes para que nazca. " + exception);
                 }
             }
+
         });
 
         //Buscar en el registro
@@ -134,7 +142,6 @@ public class ejercicio1 extends JFrame {
         buttonActualizar1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 // Recuperar el código del registro a actualizar
                 int cod = textFieldCodigo1.getText().isEmpty() ? 0 : Integer.parseInt(textFieldCodigo1.getText());
 
@@ -143,37 +150,45 @@ public class ejercicio1 extends JFrame {
                     return;
                 }
 
-                try {
-                    // Obtener el registro existente por ID
-                    ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+                // Confirmación antes de actualizar
+                int confirmacion = JOptionPane.showConfirmDialog(null,
+                        "¿Estás seguro de que deseas actualizar este registro?", "Confirmación",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-                    if (registroExistente == null) {
-                        JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
-                        return;
-                    }
-
-                    // Actualizar los campos del registro existente con los nuevos datos
-                    registroExistente.setNombre(textFieldNombre1.getText());
-                    registroExistente.setApellido(textFieldApellido1.getText());
-                    registroExistente.setDepartamento(comboBoxDepertamento1.getSelectedItem().toString());
-
-                    // Convertir el texto de la fecha a Timestamp
+                if (confirmacion == JOptionPane.YES_OPTION) {
                     try {
-                        Date parsedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(textFieldFechaNacimiento1.getText());
-                        Timestamp timestamp = new Timestamp(parsedDate.getTime());
-                        registroExistente.setFechaNacimiento(timestamp);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null, "Formato de fecha no válido. Use yyyy-MM-dd HH:mm:ss");
-                        return;
+                        // Obtener el registro existente por ID
+                        ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+
+                        if (registroExistente == null) {
+                            JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
+                            return;
+                        }
+
+                        // Actualizar los campos del registro existente con los nuevos datos
+                        registroExistente.setNombre(textFieldNombre1.getText());
+                        registroExistente.setApellido(textFieldApellido1.getText());
+                        registroExistente.setDepartamento(comboBoxDepertamento1.getSelectedItem().toString());
+
+                        // Convertir el texto de la fecha a Timestamp
+                        try {
+                            Date parsedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(textFieldFechaNacimiento1.getText());
+                            Timestamp timestamp = new Timestamp(parsedDate.getTime());
+                            registroExistente.setFechaNacimiento(timestamp);
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, "Formato de fecha no válido. Use yyyy-MM-dd HH:mm:ss");
+                            return;
+                        }
+
+                        // Actualizar el registro en la base de datos
+                        new ServiceDatos().actualizar(registroExistente);
+                        JOptionPane.showMessageDialog(null, "Registro actualizado con éxito");
+
+                    } catch (Exception exception) {
+                        JOptionPane.showMessageDialog(null, "Error al actualizar el registro: " + exception.getMessage());
                     }
-
-                    // Actualizar el registro en la base de datos
-                    new ServiceDatos().actualizar(registroExistente);
-                    JOptionPane.showMessageDialog(null, "Registro actualizado con éxito");
-
-
-                } catch (Exception exception) {
-                    JOptionPane.showMessageDialog(null, "Error al actualizar el registro: " + exception.getMessage());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Actualización cancelada.");
                 }
             }
         });
@@ -191,30 +206,38 @@ public class ejercicio1 extends JFrame {
                     return;
                 }
 
-                try {
-                    //verificar si el registro existe antes de eliminarlo
-                    ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+                // Confirmación antes de eliminar
+                int confirmacion = JOptionPane.showConfirmDialog(null,
+                        "¿Estás seguro de que deseas eliminar este registro?", "Confirmación",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-                    if (registroExistente == null) {
-                        JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
-                        return;
+                if (confirmacion == JOptionPane.YES_OPTION) {
+                    try {
+                        // Verificar si el registro existe antes de eliminarlo
+                        ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+
+                        if (registroExistente == null) {
+                            JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
+                            return;
+                        }
+
+                        // Eliminar el registro de la base de datos
+                        new ServiceDatos().eliminar(cod);
+                        JOptionPane.showMessageDialog(null, "Registro eliminado con éxito");
+
+                        // Limpiar los campos después de la eliminación
+                        textFieldCodigo1.setText("");
+                        textFieldNombre1.setText("");
+                        textFieldApellido1.setText("");
+                        comboBoxDepertamento1.setSelectedIndex(0);
+                        textFieldFechaNacimiento1.setText("");
+
+                    } catch (Exception exception) {
+                        JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + exception.getMessage());
                     }
-
-                    //eliminar el registro de la base de datos
-                    new ServiceDatos().eliminar(cod);
-                    JOptionPane.showMessageDialog(null, "Registro eliminado con éxito");
-
-                    // Limpiar los campos después de la eliminación
-                    textFieldCodigo1.setText("");
-                    textFieldNombre1.setText("");
-                    textFieldApellido1.setText("");
-                    comboBoxDepertamento1.setSelectedIndex(0);
-                    textFieldFechaNacimiento1.setText("");
-
-                }catch (Exception exception){
-                    JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + exception.getMessage());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Eliminación cancelada.");
                 }
-
             }
         });
 
@@ -223,6 +246,9 @@ public class ejercicio1 extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
+                principal frm= new principal();
+                frm.setVisible(true);
+                frm.setSize(500,400);
             }
         });
     }

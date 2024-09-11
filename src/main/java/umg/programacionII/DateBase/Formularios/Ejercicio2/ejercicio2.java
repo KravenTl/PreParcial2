@@ -1,5 +1,6 @@
 package umg.programacionII.DateBase.Formularios.Ejercicio2;
 
+import umg.programacionII.DateBase.Formularios.Principal.principal;
 import umg.programacionII.DateBase.Model.Modeltb_usuarios;
 import umg.programacionII.DateBase.Service.Servicetb_usuarios;
 
@@ -65,44 +66,45 @@ public class ejercicio2 extends JFrame {
         buttonCrear2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 Modeltb_usuarios usuario = new Modeltb_usuarios();
                 usuario.setNombre(textFieldNombre.getText());
                 usuario.setCorreo(textFieldCorreo.getText());
                 usuario.setSeccion(comboBoxSeccion.getSelectedItem().toString());
                 usuario.setCarne(textFieldCarne.getText()); // No olvides esto
 
-                // Solo establecer telegramid si tienes un valor
+                // Verificar si todos los campos están llenos
                 if (textFieldNombre.getText().isEmpty() ||
                         textFieldCorreo.getText().isEmpty() ||
                         textFieldCarne.getText().isEmpty() ||
                         comboBoxSeccion.getSelectedItem().toString().isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Debe llenar validamente todos los campos");
+                    JOptionPane.showMessageDialog(null, "Debe llenar todos los campos");
                     return;
                 }
 
-
-
-                    // Manejo del campo activo
+                // Manejo del campo activo
                 if (checkBoxActividad.isSelected()) {
                     usuario.setActivo("1");
                 } else {
                     usuario.setActivo("0");
                 }
 
-                if (textFieldNombre.getText().isEmpty() || textFieldCorreo.getText().isEmpty() || textFieldCarne.getText().isEmpty()
-                        || comboBoxSeccion.getSelectedItem().toString().isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Debe llenar todos los campos");
-                } else {
-                    try {
-                        new Servicetb_usuarios().guardarOActualizarUsuario(usuario);
-                        JOptionPane.showMessageDialog(null, "Usuario creado exitosamente");
-                    } catch (Exception exception) {
-                        JOptionPane.showMessageDialog(null, "Error al crear usuario: " + exception.getMessage());
-                    }
+                try {
+                    new Servicetb_usuarios().guardarOActualizarUsuario(usuario);
+                    JOptionPane.showMessageDialog(null, "Usuario creado exitosamente");
+
+                    // Limpiar los campos después de la creación
+                    textFieldNombre.setText("");
+                    textFieldCorreo.setText("");
+                    textFieldCarne.setText("");
+                    comboBoxSeccion.setSelectedIndex(0);
+                    textFieldTelegramId.setText(""); // Si aplica
+                    checkBoxActividad.setSelected(false);
+
+                } catch (Exception exception) {
+                    JOptionPane.showMessageDialog(null, "Error al crear usuario: " + exception.getMessage());
                 }
             }
-
-
         });
 
 
@@ -135,8 +137,7 @@ public class ejercicio2 extends JFrame {
         //Para actualizar
         buttonActualizar2.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                // Recuperamos la id del usuario
+            public void actionPerformed(ActionEvent e) {        // Recuperamos la id del usuario
                 int idusuario = textFieldIdUsuario.getText().isEmpty() ? 0 : Integer.parseInt(textFieldIdUsuario.getText());
 
                 if (idusuario == 0) {
@@ -165,7 +166,6 @@ public class ejercicio2 extends JFrame {
                         usuarioexistente.setTelegramid(Long.parseLong(textFieldTelegramId.getText()));
                     }
 
-
                     // Manejo del campo activo
                     if (checkBoxActividad.isSelected()) {
                         usuarioexistente.setActivo("1");
@@ -173,9 +173,16 @@ public class ejercicio2 extends JFrame {
                         usuarioexistente.setActivo("0");
                     }
 
-                    // Actualizar los datos en la base de datos
-                    new Servicetb_usuarios().guardarOActualizarUsuario(usuarioexistente);
-                    JOptionPane.showMessageDialog(null, "Usuario actualizado exitosamente");
+                    // Confirmar la actualización con el usuario
+                    int confirm = JOptionPane.showConfirmDialog(null, "¿Está seguro de que desea actualizar este usuario?", "Confirmar actualización", JOptionPane.YES_NO_OPTION);
+
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        // Actualizar los datos en la base de datos
+                        new Servicetb_usuarios().guardarOActualizarUsuario(usuarioexistente);
+                        JOptionPane.showMessageDialog(null, "Usuario actualizado exitosamente");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Actualización cancelada.");
+                    }
 
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Error al actualizar usuario: " + ex.getMessage());
@@ -187,6 +194,7 @@ public class ejercicio2 extends JFrame {
         buttonEliminar2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 // Verificamos si el campo de ID de usuario está vacío
                 int idusuario = textFieldIdUsuario.getText().isEmpty() ? 0 : Integer.parseInt(textFieldIdUsuario.getText());
 
@@ -198,7 +206,7 @@ public class ejercicio2 extends JFrame {
                 // Confirmación antes de eliminar
                 int confirmacion = JOptionPane.showConfirmDialog(null,
                         "¿Estás seguro de que deseas eliminar este usuario?", "Confirmación",
-                        JOptionPane.YES_NO_OPTION);
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                 if (confirmacion == JOptionPane.YES_OPTION) {
                     try {
@@ -222,6 +230,8 @@ public class ejercicio2 extends JFrame {
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(null, "Error al eliminar el usuario: " + ex.getMessage());
                     }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Eliminación cancelada.");
                 }
             }
         });
@@ -231,6 +241,9 @@ public class ejercicio2 extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
+                principal frm=new principal();
+                frm.setVisible(true);
+                frm.setSize(500,400);
             }
         });
     }

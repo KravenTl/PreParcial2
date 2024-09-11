@@ -21,11 +21,13 @@ public class Servicetb_usuarios {
 
     // Guardar o actualizar un usuario
     public boolean guardarOActualizarUsuario(Modeltb_usuarios usuario) {
+
         // Verificar si el correo ya existe
         if (daoUsuario.existeCorreo(usuario.getCorreo(), usuario.getIdusuario())) {
             throw new IllegalArgumentException("El correo ya está en uso por otro usuario");
         }
 
+        //Para verificar si existe el usuario o no
         if (usuario.getIdusuario() == 0) {
             // Si el ID es 0, significa que es un nuevo usuario, entonces lo insertamos
             return daoUsuario.insertarUsuario(usuario);
