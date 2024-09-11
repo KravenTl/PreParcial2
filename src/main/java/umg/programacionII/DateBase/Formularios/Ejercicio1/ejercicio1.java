@@ -1,9 +1,16 @@
 package umg.programacionII.DateBase.Formularios.Ejercicio1;
 
+import umg.programacionII.DateBase.Formularios.Principal.principal;
+import umg.programacionII.DateBase.Model.ModelDatos;
+import umg.programacionII.DateBase.Service.ServiceDatos;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ejercicio1 extends JFrame {
     private JLabel lblTitulo1;
@@ -12,7 +19,17 @@ public class ejercicio1 extends JFrame {
     private JButton buttonBuscar1;
     private JButton buttonActualizar1;
     private JButton buttonEliminar1;
-    private JButton buttonRegresaralMenu;
+    private JButton buttonRegresaralMenu1;
+    private JLabel lblCodigo1;
+    private JTextField textFieldCodigo1;
+    private JLabel lblNombre1;
+    private JTextField textFieldNombre1;
+    private JLabel lblApellido;
+    private JTextField textFieldApellido1;
+    private JLabel lblDepartamento1;
+    private JComboBox comboBoxDepertamento1;
+    private JLabel lblFechaNacimiento1;
+    private JTextField textFieldFechaNacimiento1;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("ejercicio1");
@@ -24,8 +41,7 @@ public class ejercicio1 extends JFrame {
 
     public ejercicio1() {//contructor para modificar el ejericio 1
 
-        // Establecer el layout del panel a null para posicionar manualmente los componentes
-        jFormEjercicio1.setLayout(null);
+
 
         // Cambiar la posición y tamaño del lblTitulo
         lblTitulo1.setBounds(145,20,200,50);
@@ -33,28 +49,181 @@ public class ejercicio1 extends JFrame {
         // Cambiar el tamaño de la fuente del lblTitulo
         lblTitulo1.setFont(new Font("Arial", Font.BOLD, 20));
 
-        // Ajustar la posición y el tamaño de los botones
-
-        buttonCrear1.setBounds(50, 100, 100, 30);
-        buttonBuscar1.setBounds(160, 100, 100, 30);
-        buttonActualizar1.setBounds(270, 100, 100, 30);
-        buttonEliminar1.setBounds(50, 150, 100, 30);
-        buttonRegresaralMenu.setBounds(160, 150, 100, 30);
-
         // Configuramos el contenido del JFrame con el panel jFormEjercicio1
         setContentPane(jFormEjercicio1);
         setTitle("Ejercicio 1");
-        setSize(400, 300); // Establecer tamaño
+        setSize(600, 500); // Establecer tamaño
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Para cerrar sólo esta ventana
         setLocationRelativeTo(null); // Centrar la ventana
 
 
+
+        // Agregar todos los departamentos de Guatemala al JComboBox
+        String[] departamentos = {
+                "","Guatemala", "Alta Verapaz", "Baja Verapaz", "Chimaltenango", "Chiquimula",
+                "El Progreso", "Escuintla", "Huehuetenango", "Izabal", "Jalapa",
+                "Jutiapa", "Petén", "Quetzaltenango", "Quiché", "Retalhuleu",
+                "Sacatepéquez", "San Marcos", "Santa Rosa", "Solalá", "Suchitepéquez",
+                "Totonicapán", "Zacapa"
+        };
+
+        for (String depto : departamentos) {//for each para recorrer cada uno de los departamentos
+            comboBoxDepertamento1.addItem(depto);
+        }
+
+        //crear un registro
         buttonCrear1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                ModelDatos datos= new ModelDatos();
+                datos.setNombre(textFieldNombre1.getText());
+                datos.setApellido(textFieldApellido1.getText());
+                datos.setDepartamento(comboBoxDepertamento1.getSelectedItem().toString());
+                datos.setFechaNacimiento(new Timestamp(System.currentTimeMillis()));
+
+                if(textFieldNombre1.getText().trim().isEmpty()&& textFieldApellido1.getText().trim().isEmpty()){
+                    JOptionPane.showMessageDialog(null, "El nombre y el apellido no deben estar vacios");
+                    return;
+                }
+
+                // Convertir el texto de la fecha a Timestamp
+                try {
+                    Date parsedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(textFieldFechaNacimiento1.getText());
+                    Timestamp timestamp = new Timestamp(parsedDate.getTime());
+                    datos.setFechaNacimiento(timestamp);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Formato de fecha no válido. Use yyyy-MM-dd HH:mm:ss");
+                    return;
+                }
+
+                try {
+                    new ServiceDatos().insertar(datos);
+                    JOptionPane.showMessageDialog(null, "Efectivamente ah nacido con exito");
+                } catch (Exception exception) {
+                    JOptionPane.showMessageDialog(null, "Aun falta un mes para que nazca" + exception);
+                }
+            }
+        });
+
+        //Buscar en el registro
+        buttonBuscar1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int cod= textFieldCodigo1.getText().isEmpty() ? 0 : Integer.parseInt(textFieldCodigo1.getText());
+
+                if(cod==0){
+                    JOptionPane.showMessageDialog(null, "Por favor ingrese un codigo valido");
+                    return;
+                }
+
+                try{
+                ModelDatos registroencontrado= new ServiceDatos().obtenerPorId(cod);
+                textFieldNombre1.setText(registroencontrado.getNombre());
+                textFieldApellido1.setText(registroencontrado.getApellido());
+                comboBoxDepertamento1.setSelectedItem((registroencontrado.getDepartamento()));
+                textFieldFechaNacimiento1.setText(registroencontrado.getFechaNacimiento().toString());
+
+                }catch (Exception exception){
+                    JOptionPane.showMessageDialog(null, "Error al buscar el registro"+exception);
+                }
+            }
+        });
+
+        //Actualizar registro
+        buttonActualizar1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                // Recuperar el código del registro a actualizar
+                int cod = textFieldCodigo1.getText().isEmpty() ? 0 : Integer.parseInt(textFieldCodigo1.getText());
+
+                if (cod == 0) {
+                    JOptionPane.showMessageDialog(null, "Por favor, ingrese un código válido.");
+                    return;
+                }
+
+                try {
+                    // Obtener el registro existente por ID
+                    ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+
+                    if (registroExistente == null) {
+                        JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
+                        return;
+                    }
+
+                    // Actualizar los campos del registro existente con los nuevos datos
+                    registroExistente.setNombre(textFieldNombre1.getText());
+                    registroExistente.setApellido(textFieldApellido1.getText());
+                    registroExistente.setDepartamento(comboBoxDepertamento1.getSelectedItem().toString());
+
+                    // Convertir el texto de la fecha a Timestamp
+                    try {
+                        Date parsedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(textFieldFechaNacimiento1.getText());
+                        Timestamp timestamp = new Timestamp(parsedDate.getTime());
+                        registroExistente.setFechaNacimiento(timestamp);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(null, "Formato de fecha no válido. Use yyyy-MM-dd HH:mm:ss");
+                        return;
+                    }
+
+                    // Actualizar el registro en la base de datos
+                    new ServiceDatos().actualizar(registroExistente);
+                    JOptionPane.showMessageDialog(null, "Registro actualizado con éxito");
+
+
+                } catch (Exception exception) {
+                    JOptionPane.showMessageDialog(null, "Error al actualizar el registro: " + exception.getMessage());
+                }
+            }
+        });
+
+        //Eliminar registro
+        buttonEliminar1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                // Recuperar el código del registro a eliminar
+                int cod = textFieldCodigo1.getText().isEmpty() ? 0 : Integer.parseInt(textFieldCodigo1.getText());
+
+                if (cod == 0) {
+                    JOptionPane.showMessageDialog(null, "Por favor, ingrese un código válido.");
+                    return;
+                }
+
+                try {
+                    //verificar si el registro existe antes de eliminarlo
+                    ModelDatos registroExistente = new ServiceDatos().obtenerPorId(cod);
+
+                    if (registroExistente == null) {
+                        JOptionPane.showMessageDialog(null, "No se encontró un registro con el código proporcionado.");
+                        return;
+                    }
+
+                    //eliminar el registro de la base de datos
+                    new ServiceDatos().eliminar(cod);
+                    JOptionPane.showMessageDialog(null, "Registro eliminado con éxito");
+
+                    // Limpiar los campos después de la eliminación
+                    textFieldCodigo1.setText("");
+                    textFieldNombre1.setText("");
+                    textFieldApellido1.setText("");
+                    comboBoxDepertamento1.setSelectedIndex(0);
+                    textFieldFechaNacimiento1.setText("");
+
+                }catch (Exception exception){
+                    JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + exception.getMessage());
+                }
 
             }
         });
-    }
 
+        //Para cerrar la ventana
+        buttonRegresaralMenu1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+    }
 }

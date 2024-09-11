@@ -32,6 +32,7 @@ public class principal extends JFrame {
         setTitle("Principal");
         setContentPane(jFormPrincipal);
         setLayout(null); // Establecer el layout del panel a null para posicionar manualmente los componentes
+        setLocationRelativeTo(null);
 
         // Cambiar la posición y tamaño del lblTitulo
         lblTitulo.setBounds(160, 20, 200, 50); // (x, y, width, height)
@@ -46,9 +47,6 @@ public class principal extends JFrame {
         buttonEjercicio1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Cerrar la ventana principal
-                //dispose();
-
                 // Abrir el formulario del ejercicio 1
                 ejercicio1 frm1 = new ejercicio1();
                 frm1.setVisible(true);
@@ -62,7 +60,6 @@ public class principal extends JFrame {
                 // Abrir el formulario del ejercicio 2
                 ejercicio2 frm2 = new ejercicio2();
                 frm2.setVisible(true);
-                //dispose();
             }
         });
 
@@ -72,7 +69,6 @@ public class principal extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 ejercicio3 frm3 = new ejercicio3();
                 frm3.setVisible(true);
-                //dispose();
             }
         });
     }
