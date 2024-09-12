@@ -63,7 +63,7 @@ public class ejercicio3 extends JFrame {
 
         // Configuramos el contenido del JFrame con el panel jFormEjercicio1
         setContentPane(jFormEjercicio3);
-        setTitle("Ejercicio2");
+        setTitle("Ejercicio3");
         setSize(700, 600); // Establecer tamaño
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Para cerrar sólo esta ventana
         setLocationRelativeTo(null); // Centrar la ventana
